@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<Order>
+    <Id>4</Id>
+    <Customer>
+      <Id>1</Id>
+      <Name>Customer1</Name>
+    </Customer>
+    <CreateTime>2021-03-21T00:00:00</CreateTime>
+    <Details>
+      <OrderDetail>
+        <Goods>
+          <Id>1</Id>
+          <Name>apple</Name>
+          <Price>30</Price>
+        </Goods>
+        <Quantity>80</Quantity>
+      </OrderDetail>
+    </Details>
+  </Order>
