@@ -1,29 +1,31 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using ch02_1.Shapes;
 
-namespace homework3
+namespace ch02_1
 {
     class Program
     {
         static void Main(string[] args)
         {
-            try
-            {
-                List<Shape> shapes = new List<Shape>();
-                for (int i = 0; i < 10; i++)
-                {
-                    shapes.Add(ShapeFactory.CreateRandomShape());
-                }
+            Rectangle rect = new Rectangle(-10, -5);
+            Console.WriteLine(rect.Legal);
+            Console.WriteLine(rect.Area);
 
-                shapes.ForEach(s =>
-                  Console.WriteLine($"{s.Info}, area={s.Area}"));
+            Square sq = new Square(5);
+            Console.WriteLine(sq.Legal);
+            Console.WriteLine(sq.Area);
 
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
+            Triangle tri = new Triangle(5, 7, 8);
+            Console.WriteLine(tri.Legal);
+            Console.WriteLine(tri.Area);
+
+            Shape shape = rect;
+            Console.WriteLine(shape.Legal);
+            Console.WriteLine(shape.Area);
         }
     }
 }
