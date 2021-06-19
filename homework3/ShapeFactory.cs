@@ -1,70 +1,53 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using ch02_1.Shapes;
 
-namespace homework3
+namespace ch02_2.BeanFactory
 {
-    class ShapeFactory
+    enum ShapeType
     {
-        static Random random = new Random();
+        Rectangle,
+        Squre,
+        Triangle,
+    }
 
-        public static Shape CreateShape(string type, params double[] edges)
+    class Factory
+    {
+        private Random random = new Random();           // 避免Random在循环中生成
+
+        public Shape GetShape(ShapeType shapeType)
         {
-            Shape result = null;
-            switch (type)
+            switch (shapeType)
             {
-                case "squre":
-                    result = new Square(edges[0]);
-                    break;
-                case "circle":
-                    result = new Circle(edges[0]);
-                    break;
-                case "rectangle":
-                    result = new Rectangle(edges[0], edges[1]);
-                    break;
-                case "triangle":
-                    result = new Triangle(edges[0], edges[1], edges[2]);
-                    break;
-                default: throw new InvalidOperationException("Invalid shape type:" + type);
+                case ShapeType.Rectangle:
+                    return new Rectangle();
+                case ShapeType.Squre:
+                    return new Square();
+                case ShapeType.Triangle:
+                    return new Triangle();
+                default:
+                    return null;
             }
-            if (!result.IsValid())
-            {
-                throw new InvalidOperationException("Invalid shape arguments");
-            }
-            return result;
         }
 
-        
-        public static Shape CreateRandomShape()
+        public Shape GetRandomShape()
         {
-            int type = random.Next(0, 4);
-            Shape result = null;
-            while (result == null)
+            ShapeType[] shapeTypes = Enum.GetValues(typeof(ShapeType)) as ShapeType[];
+            ShapeType shapeType = shapeTypes[random.Next(0, shapeTypes.Length)];
+            switch (shapeType)
             {
-                try
-                {
-                    switch (type)
-                    {
-                        case 0:
-                            result = CreateShape("squre", random.Next(200));
-                            break;
-                        case 1:
-                            result = CreateShape("circle", random.Next(200));
-                            break;
-                        case 2:
-                            result = CreateShape("rectangle", random.Next(200), random.Next(200));
-                            break;
-                        case 3:
-                            result = CreateShape("triangle", random.Next(200), random.Next(200), random.Next(200));
-                            break;
-                    }
-                }
-                catch
-                {
-                    
-                }
+                case ShapeType.Rectangle:
+                    return new Rectangle();
+                case ShapeType.Squre:
+                    return new Square();
+                case ShapeType.Triangle:
+                    return new Triangle();
+                default:
+                    return null;
             }
-            return result;
         }
     }
 }
