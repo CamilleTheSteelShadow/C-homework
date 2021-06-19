@@ -1,78 +1,134 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Xml.Serialization;
 
-namespace Order
+namespace ch03
 {
-    class OrderService
+    public class OrderService
     {
-        private List<Order> orderList = new List<Order>();
+        private List<Order> orders;
 
         public OrderService()
         {
+            orders = new List<Order>();
         }
 
-        public void AddOrder(Order order)
+        public void AddOrder(Order newOrder)
         {
-            if (orderList.Contains(order))
+            if (orders.Contains(newOrder))      // 由于Order类实现了Equals方法，所以可以用Contain方法查询
             {
-                throw new ApplicationException($"the order {order.ID} already exists!");
+                throw new Exception("订单添加错误，已存在相同订单号的订单");
             }
-            orderList.Add(order);
+            orders.Add(newOrder);
         }
 
-        public void Update(Order order)
+        public void DeleteOrder(int id)
         {
-            RemoveOrder(order.ID);
-            orderList.Add(order);
+            orders.RemoveAll(o => o.Id == id);
         }
 
-        public Order GetById(int orderId)
+        public void UpdateOrder(Order order)
         {
-            return orderList.Where(o => o.ID == orderId).FirstOrDefault();
+            DeleteOrder(order.Id);
+            AddOrder(order);
         }
 
-        public void RemoveOrder(int orderId)
+        public Order SearchWithId(int Id)
         {
-            orderList.RemoveAll(o => o.ID == orderId);
+            return orders.FirstOrDefault(o => o.Id == Id);
         }
 
-        public List<Order> QueryAll()
+        public IEnumerable<Order> SearchWithName(string Name)
         {
-            return orderList;
+            var q = orders.Where(
+                o =>
+                {
+                    return o.OrderDetails.Where(
+                        od =>
+                        {
+                            return od.Commodity.Name == Name;
+                        }).Count() != 0;
+                }).OrderByDescending(o => o.Money);          // 两层查询，当订单中有包含该名称的订单明细时，返回订单
+            return q;
         }
 
-        public IEnumerable<Order> Query(Predicate<Order> condition)
+        public IEnumerable<Order> SearchWithCustomer(Customer customer)
         {
-            return orderList.Where(o => condition(o));
+            var q = from o in orders
+                    where o.Customer.Equals(customer)
+                    orderby o.Money descending
+                    select o;
+            return q;
         }
 
-        public List<Order> QueryByGoodsName(string goodsName)
+        public IEnumerable<Order> SearchWithMoney(double lower, double upper)
         {
-            var query = orderList.Where(
-              o => o.Details.Any(d => d.Goods.NAME == goodsName));
-            return query.ToList();
+            var q = from o in orders
+                    where o.Money >= lower && o.Money <= upper
+                    orderby o.Money descending
+                    select o;
+            return q;
         }
 
-        public List<Order> QueryByTotalAmount(float totalAmount)
+        public IEnumerable<Order> SearchWithMoney(double Money)
         {
-            var query = orderList.Where(o => o.TotalPrice >= totalAmount);
-            return query.ToList();
+            var q = from o in orders
+                    where Math.Round(o.Money, 2) == Math.Round(Money, 2)    // 避免浮点数精确度的问题
+                    orderby o.Money descending
+                    select o;
+            return q;
         }
 
-        public List<Order> QueryByCustomerName(string customerName)
+        public IEnumerable<Order> SelectAll()
         {
-            var query = orderList
-                .Where(o => o.Customer.NAME == customerName);
-            return query.ToList();
+            return orders;
         }
 
+        public void Sort()
+        {
+            orders.Sort();
+        }
 
         public void Sort(Comparison<Order> comparison)
         {
-            orderList.Sort(comparison);
+            orders.Sort(comparison);
         }
 
+        public void Export(string path)
+        {
+            if (Path.GetExtension(path) != ".xml")
+            {
+                throw new ArgumentException($"{path} is not a xml file!");
+            }
+
+            XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<Order>));
+            using(FileStream fs = new FileStream(path, FileMode.Create))
+            {
+                xmlSerializer.Serialize(fs, orders);
+            }
+        }
+
+        public void Import(string path)
+        {
+            if (!File.Exists(path))
+            {
+                throw new ArgumentException($"{path} does not exist!");
+            }
+
+            if (Path.GetExtension(path) != ".xml")
+            {
+                throw new ArgumentException($"{path} is not a xml file!");
+            }
+
+            XmlSerializer xmlSerializer = new XmlSerializer(typeof(List<Order>));
+            using (FileStream fs = new FileStream(path, FileMode.Open))
+            {
+                orders = (List<Order>)xmlSerializer.Deserialize(fs);
+            }
+        }
     }
 }
