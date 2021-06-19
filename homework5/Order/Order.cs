@@ -1,61 +1,88 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
-namespace Order
+namespace ch03
 {
-    class Order : IComparable<Order>
+    [Serializable]
+    public class Order : IComparable
     {
-        public int ID{ get; set; }
+        public int Id { get; set; }
         public Customer Customer { get; set; }
-
-        public double TotalPrice {
-            get => Details.Sum(d => d.Amount);
-        }
-        public List<OrderDetail> Details = new List<OrderDetail>();
-
-        public Order(int id,Customer customer)
+        public double Money
         {
-            this.ID = id;
-            this.Customer = customer;
-        }
-
-        public void AddDetails(OrderDetail orderDetail)
-        {
-            if (this.Details.Contains(orderDetail))
+            get
             {
-                throw new ApplicationException($"The goods ({orderDetail.Goods.NAME}) exist in order {ID}");
+                double sum = 0;
+                OrderDetails.ForEach(o => sum += o.Money);
+                return sum;
             }
-            Details.Add(orderDetail);
         }
 
-        public int CompareTo(Order other)
+        private List<OrderDetail> orderDetails;     // 为了保证订单明细不重复，这里将orderDetails作为私有成员，并提供添加订单明细方法
+
+        public List<OrderDetail> OrderDetails => orderDetails;
+
+        public Order()
         {
-            if (other == null) return 1;
-            return ID - other.ID;
+            Random random = new Random();
+            this.Id = random.Next(0, 10000);
+            this.Customer = new Customer();
+            this.orderDetails = new List<OrderDetail>();
         }
 
-        public override bool Equals(object obj)
+        public Order(int Id, Customer customer, List<OrderDetail> orderDetails)
         {
-            Order order = obj as Order;
-            return order != null && order.ID == ID;
+            this.Id = Id;
+            this.Customer = customer;
+            this.orderDetails = orderDetails;
         }
 
-        public override int GetHashCode()
+        public void AddOrderDetail(OrderDetail orderDetail)
         {
-            return HashCode.Combine(ID);
+            foreach (var od in OrderDetails)
+            {
+                if (od.Equals(orderDetail))
+                {
+                    throw new Exception("添加OrderDetail错误，OrderDetail重复");
+                }
+            }
+            OrderDetails.Add(orderDetail);
         }
 
         public override string ToString()
         {
-            return base.ToString();
+            string str = $"ID: {Id}\n" +
+                $"Customer: \n\t{Customer}\n" +
+                $"Money: {Math.Round(Money, 2)}\n" +
+                $"Order Detail:\n";
+            foreach (var orderDetail in orderDetails)
+            {
+                str += "\t" + orderDetail.ToString() + "\n";
+            }
+            return str;
         }
 
-        public void RemoveDetails(int num)
+        public override bool Equals(Object obj)
         {
-            Details.RemoveAt(num);
+            if (!(obj is Order order) || this.Id != order.Id) return false;
+            return true;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Id;
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (!(obj is Order order))
+            {
+                throw new System.ArgumentException("CompareTo无法将object转为Order类型");
+            }
+            return this.Id - order.Id;
         }
     }
 }
