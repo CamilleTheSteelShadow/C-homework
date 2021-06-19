@@ -1,37 +1,50 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace Order
+namespace ch03
 {
-    class Customer
+    [Serializable]
+    public class Customer
     {
-        public int ID { get; set; }
+        public string Name { get; set; }
+        public int Age { get; set; }
 
-        public string NAME { get; set; }
-
-        public Customer(int id,string name)
+        public Customer()
         {
-            this.ID = id;
-            this.NAME = name;
+            this.Name = "";
+            this.Age = -1;
+        }
+
+        public Customer(string name, int age)
+        {
+            this.Name = name;
+            this.Age = age;
         }
 
         public override string ToString()
         {
-            return $"顾客ID:{ID},顾客姓名:{NAME}";
+            return $"Name: {Name}\tAge: {Age}";
         }
 
         public override bool Equals(object obj)
         {
             Customer customer = obj as Customer;
-            return customer != null &&
-                   ID == customer.ID &&
-                   NAME ==customer.NAME;
+            if (customer == null || this.Name != customer.Name || this.Age != customer.Age) return false;
+            return true;
         }
 
         public override int GetHashCode()
         {
-            return 123456 + ID.GetHashCode();
+            var bytes = Encoding.Default.GetBytes(Name);
+            int nameInt = 0;
+            foreach (var b in bytes)
+            {
+                nameInt = nameInt * 10 + Convert.ToInt32(b);
+            }
+            return nameInt + Age;
         }
     }
 }
