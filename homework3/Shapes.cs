@@ -1,144 +1,131 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace homework3
+namespace ch02_1.Shapes
 {
-
-    interface Shape
+    public abstract class Shape
     {
-        double Area { get; }
+        abstract public bool Legal { get; }
 
-        string Info { get; }
-
-        bool IsValid();
+        abstract public double Area { get; }
     }
 
-
-
-    class Rectangle : Shape
+    public class Rectangle : Shape
     {
         public double Length { get; set; }
-
         public double Width { get; set; }
 
-        public Rectangle(double length, double width)
-        {
-            this.Length = length;
-            this.Width = width;
+        public override bool Legal 
+        { 
+            get
+            {
+                if (Length > 0 && Width > 0)
+                {
+                    return true;
+                }
+                return false;
+            }
         }
 
+        public Rectangle()
+        {
+            Random random = new Random();
+            do
+            {
+                this.Length = random.NextDouble() * 100;
+                this.Width = random.NextDouble() * 100;
+            } while (!this.Legal);
+        }
 
-        public string Info => $"矩形:length={Length},width={Width}.";
-        public double Area
+        public override double Area
         {
             get
             {
-                if (!IsValid()) throw new InvalidOperationException("形状无效，无法计算面积");
+                if (!this.Legal) { return -1; }
+
                 return Length * Width;
             }
         }
 
-        public bool IsValid()
+        public Rectangle(double Length, double Width)
         {
-            return Length > 0 && Width > 0;
+            this.Length = Length;
+            this.Width = Width;
         }
-
-
     }
 
-
-
-    class Square : Shape
+    public class Square : Rectangle
     {
-
         public double Side
         {
-            get; set;
-        }
-
-        public Square(double side)
-        {
-            Side = side;
-        }
-
-        public string Info => $"正方形:side={Side}.";
-
-
-        public double Area
-        {
-            get
+            set
             {
-                if (!IsValid()) throw new InvalidOperationException("形状无效，无法计算面积");
-                return Side * Side;
+                this.Length = value;
+                this.Width = value;
             }
         }
 
-        public bool IsValid()
-        {
-            return Side > 0;
+        public Square() : base()
+        {  
+            this.Width = this.Length;
         }
 
+        public Square(double side): base(side, side){ }
     }
 
-
-    class Triangle : Shape
+    public class Triangle : Shape
     {
-        public double[] Edges { get; set; } = new double[3];
-        public Triangle(double a, double b, double c)
+        public double Side1 { get; set; }
+        public double Side2 { get; set; }
+        public double Side3 { get; set; }
+
+        public Triangle()
         {
-            double[] newEdges = new double[3] { a, b, c };
-            this.Edges = newEdges;
+            Random random = new Random();
+            do
+            {
+                this.Side1 = random.NextDouble() * 100;
+                this.Side2 = random.NextDouble() * 100;
+                this.Side3 = random.NextDouble() * 100;
+            } while (!this.Legal);
         }
 
-        public string Info
+        public Triangle(double Side1, double Side2, double Side3)
         {
-            get => $"三角形:a={Edges[0]},b={Edges[1]},c={Edges[2]}.";
+            this.Side1 = Side1;
+            this.Side2 = Side2;
+            this.Side3 = Side3;
         }
 
-        public double Area
+        public override double Area
         {
             get
             {
-                if (!IsValid()) throw new InvalidOperationException("形状无效，无法计算面积");
-                double p = (Edges[0] + Edges[1] + Edges[2]) / 2;
-                return Math.Sqrt(p * (p - Edges[0]) * (p - Edges[1]) * (p - Edges[2]));
+                if (!this.Legal) { return -1; }
+
+                double p = (Side1 + Side2 + Side3) / 2;
+                return Math.Sqrt(p * (p - Side1) * (p - Side2) * (p - Side3));      // 海伦公式
             }
         }
 
-        public bool IsValid()
-        {
-            double a = Edges[0], b = Edges[1], c = Edges[2];
-            return (a > 0 && b > 0 && c > 0 &&
-                    a + b > c && b + c > a && a + c > b);
-        }
-    }
-
-    class Circle : Shape
-    {
-
-        public Circle(double radius)
-        {
-            Radius = radius;
-        }
-
-        public double Radius { get; set; }
-
-        public string Info => $"圆形:radius={Radius}";
-
-        public double Area
+        public override bool Legal
         {
             get
             {
-                if (!IsValid()) throw new InvalidOperationException("形状无效，无法计算面积");
-                return Math.PI * Radius * Radius;
+                if (Side1 > 0 && Side2 > 0 && Side3 > 0 &&
+                    Side1 + Side2 > Side3 &&
+                    Side1 + Side3 > Side2 &&
+                    Side2 + Side3 > Side1)
+                {
+                    return true;
+                }
+                return false;
             }
         }
-
-        public bool IsValid()
-        {
-            return Radius > 0;
-        }
     }
-
 }
         
 
