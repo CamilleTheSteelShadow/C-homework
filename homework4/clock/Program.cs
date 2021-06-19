@@ -1,42 +1,22 @@
 using System;
-using System.Threading;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace clock
+namespace ch02_4
 {
-    class MainClass
+    class Program
     {
         static void Main(string[] args)
         {
-            try
-            {
-                AlarmClock clock = new AlarmClock(); //时钟
+            Clock clock = new Clock();  // 带倒计时功能的时钟
+            clock.Alarm += (S, E) => { Console.WriteLine("Alarmed!"); };
+            clock.Tick += (S, E) => { Console.WriteLine($"Time: {DateTime.Now:hh:mm:ss}"); };
+            clock.CheckPoint = 5;      // 设定倒计时：5秒
+            clock.Start();
 
-                clock.AlarmTime = new ClockTime(DateTime.Now.Hour,
-                              DateTime.Now.Minute,
-                              DateTime.Now.Second + 5);
-                clock.TickEvent += ShowTime;
-                clock.AlarmEvent += PlayMusic;
-                new Thread(clock.Run).Start();
-
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-        }
-
-        private static void ShowTime(AlarmClock sender)
-        {
-            ClockTime time = sender.CurrentTime;
-            Console.WriteLine($"Tick Event: " +
-              $"{time.Hour}:{time.Minute}:{time.Second}");
-        }
-
-        public static void PlayMusic(AlarmClock sender)
-        {
-            ClockTime time = sender.CurrentTime;
-            Console.WriteLine($"Alarm Event: {time.Hour}:{time.Minute}:{time.Second}");
-            Console.WriteLine("Playing music....");
+            Console.Read();
         }
     }
 }
