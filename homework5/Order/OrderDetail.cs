@@ -1,43 +1,53 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace Order
+namespace ch03
 {
-    class OrderDetail
+    [Serializable]
+    public class OrderDetail
     {
-        public Goods Goods { get; set; }
+        public Commodity Commodity { get; set; }
+        public int Count { get; set; }
+        public float Discount { get; set; }
 
-        public int Number { get; set; }
+        public double Money => Commodity.Price * Count * Discount;
 
-        public double Amount
+        public OrderDetail()
         {
-            get => Goods.PRICE * Number;
+            this.Commodity = new Commodity();
+            this.Count = 0;
+            this.Discount = 1F;
         }
 
-        public OrderDetail(Goods goods, int number)
+        public OrderDetail(Commodity commodity, int count, float discount=1F)
         {
-            this.Goods = goods;
-            this.Number = number;
-        }
-
-        public override bool Equals(object obj)
-        {
-            var detail = obj as OrderDetail;
-            return detail != null &&
-                   EqualityComparer<Goods>.Default.Equals(Goods, detail.Goods);
-        }
-
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
+            this.Commodity = commodity;
+            this.Count = count;
+            this.Discount = discount;
         }
 
         public override string ToString()
         {
-            return $"OrderDetail:{Goods},{Number}";
+            return $"{Commodity}\tCount: {Count}\tDiscount: {Discount}\tMoney: {Math.Round(Money, 2)}";
         }
 
+        public override bool Equals(object obj)
+        {
+            if (!(obj is OrderDetail orderDetail) || orderDetail.Commodity != this.Commodity
+                || orderDetail.Count != this.Count || orderDetail.Discount != this.Discount)
+            {
+                return false;
+            }
+            return true;
+            
+        }
 
+        public override int GetHashCode()
+        {
+            return Commodity.GetHashCode() + Count + Convert.ToInt32(Discount * 100);
+        }
     }
 }
